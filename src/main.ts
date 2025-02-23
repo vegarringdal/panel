@@ -1,15 +1,15 @@
-import { Panel } from "./panels";
+import { PanelLayout } from "./panels";
 import "./style.css";
 
-const rootNode = new Panel("HORIZONTAL");
+const rootNode = new PanelLayout("HORIZONTAL", false, 100, 100);
 rootNode.appendBody();
-rootNode.setNode1Class("red");
+rootNode.addPanel1Class("red");
 
-const leftAndContent = new Panel("VERTICAL");
-leftAndContent.setNode1Class("purple");
-rootNode.appendPanelNode2(leftAndContent);
+const leftAndContent = new PanelLayout("VERTICAL");
+leftAndContent.addPanel1Class("purple");
+rootNode.appendPanel2(leftAndContent);
 
-const contentAndRight = new Panel("VERTICAL", true);
-contentAndRight.setNode1Class("yellow");
-contentAndRight.setNode2Class("orange");
-leftAndContent.appendPanelNode2(contentAndRight);
+const contentAndRight = new PanelLayout("VERTICAL", true);
+contentAndRight.addPanel1Class("yellow");
+contentAndRight.appPanel2Class("orange");
+leftAndContent.appendPanel2(contentAndRight);

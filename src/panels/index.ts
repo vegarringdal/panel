@@ -1,23 +1,106 @@
-export class Panel {
+export class PanelLayout {
   #type: "VERTICAL" | "HORIZONTAL";
-  element: HTMLDivElement;
+  root: HTMLDivElement;
   #size: number;
-  #node1: HTMLDivElement;
-  #node2: HTMLDivElement;
+  #panel1El: HTMLDivElement;
+  #panel2El: HTMLDivElement;
   #reversed: boolean;
-  #splitter: HTMLDivElement;
+  #splitterEl: HTMLDivElement;
+  #minSize: number;
+  #maxSize: number;
 
-  constructor(type: "VERTICAL" | "HORIZONTAL", reversed = false, size = 250) {
+  constructor(
+    type: "VERTICAL" | "HORIZONTAL",
+    reversed = false,
+    size = 250,
+    minSize = 150,
+    maxSize = 450
+  ) {
     this.#type = type;
+    this.#minSize = minSize;
+    this.#maxSize = maxSize;
+
+    if (this.#minSize > this.#maxSize) {
+      console.warn("minSize > maxSize");
+      this.#minSize = this.#maxSize;
+      // yes prob should have more checks for zero etc
+    }
+
     this.#size = size;
     this.#reversed = reversed;
-    this.element = document.createElement("div");
-    this.#node1 = document.createElement("div");
-    this.#node1.classList.add("panel");
-    this.#splitter = document.createElement("div");
 
-    this.#splitter.onmousedown = (e1) => {
+    this.root = document.createElement("div");
+
+    this.#panel1El = document.createElement("div");
+    this.#panel1El.classList.add("panel");
+
+    this.#splitterEl = document.createElement("div");
+
+    this.#panel2El = document.createElement("div");
+    this.#panel2El.classList.add("panel");
+
+    this.root.appendChild(this.#panel1El);
+    this.root.appendChild(this.#splitterEl);
+    this.root.appendChild(this.#panel2El);
+
+    this.#applyResizeEvents();
+    this.#updateAll();
+  }
+
+  /**
+   * adds css class
+   * this is top if horizontal, or left if vertical
+   * @param name
+   */
+  addPanel1Class(name: string | string[]) {
+    if (Array.isArray(name)) {
+      this.#panel1El.classList.remove(...name);
+      this.#panel1El.classList.add(...name);
+      return;
+    }
+    this.#panel1El.classList.remove(name);
+    this.#panel1El.classList.add(name);
+  }
+
+  /**
+   * adds css class
+   * this is bottom if horizontal, or right if vertical
+   * @param name
+   */
+  appPanel2Class(name: string[]) {
+    if (Array.isArray(name)) {
+      this.#panel2El.classList.remove(...name);
+      this.#panel2El.classList.add(...name);
+      return;
+    }
+    this.#panel2El.classList.remove(name);
+    this.#panel2El.classList.add(name);
+  }
+
+  /**
+   * this is top if horizontal, or left if vertical
+   * @param name
+   */
+  appendPanel1(panel: PanelLayout) {
+    this.#panel1El.appendChild(panel.root);
+  }
+
+  /**
+   * this is bottom if horizontal, or right if vertical
+   * @param name
+   */
+  appendPanel2(panel: PanelLayout) {
+    this.#panel2El.appendChild(panel.root);
+  }
+
+  appendBody() {
+    document.body.appendChild(this.root);
+  }
+
+  #applyResizeEvents() {
+    this.#splitterEl.onmousedown = (e1) => {
       let abortController = new AbortController();
+
       document.body.addEventListener(
         "mouseup",
         () => {
@@ -26,8 +109,8 @@ export class Panel {
         { signal: abortController.signal }
       );
 
-      let startX = e1.clientX;
-      let startY = e1.clientY;
+      const startX = e1.clientX;
+      const startY = e1.clientY;
       let deltaX = 0;
       let deltaY = 0;
       let oldSize = this.#size;
@@ -52,7 +135,6 @@ export class Panel {
                 this.#size = oldSize - deltaY;
               }
             }
-            
 
             this.#updateSize();
           });
@@ -60,87 +142,75 @@ export class Panel {
         { signal: abortController.signal }
       );
     };
-
-    this.#node2 = document.createElement("div");
-    this.#node2.classList.add("panel");
-    this.element.appendChild(this.#node1);
-    this.element.appendChild(this.#splitter);
-    this.element.appendChild(this.#node2);
-    this.updateAll();
   }
 
-  setNode1Class(name: string) {
-    this.#node1.classList.add(name);
-  }
-
-  setNode2Class(name: string) {
-    this.#node2.classList.add(name);
-  }
-
-  appendPanelNode1(panel: Panel) {
-    this.#node1.appendChild(panel.element);
-  }
-
-  appendPanelNode2(panel: Panel) {
-    this.#node2.appendChild(panel.element);
-  }
-
-  appendBody() {
-    document.body.appendChild(this.element);
-  }
-
-  updateAll() {
-    this.element.classList.remove(...this.element.classList);
-    this.#splitter.classList.remove(...this.#splitter.classList);
+  #updateAll() {
+    this.root.classList.remove(...this.root.classList);
+    this.#splitterEl.classList.remove(...this.#splitterEl.classList);
 
     if (this.#type === "VERTICAL") {
-      this.element.classList.add("vertical-panel");
-      this.#splitter.classList.add("vertical-panel-splitter");
+      this.root.classList.add("vertical-panel");
+      this.#splitterEl.classList.add("vertical-panel-splitter");
     }
 
     if (this.#type === "HORIZONTAL") {
-      this.element.classList.add("horizontal-panel");
-      this.#splitter.classList.add("horizontal-panel-splitter");
+      this.root.classList.add("horizontal-panel");
+      this.#splitterEl.classList.add("horizontal-panel-splitter");
     }
 
     this.#updateSize();
   }
 
   #updateSize() {
+    if (this.#size < this.#minSize) {
+      this.#size = this.#minSize;
+    }
+
+    if (this.#size > this.#maxSize) {
+      this.#size = this.#maxSize;
+    }
+
+    const node = this.#reversed ? this.#panel2El : this.#panel1El;
+
     if (this.#type === "VERTICAL") {
-      if (this.#reversed) {
-        this.#node2.style.maxHeight = "";
-        this.#node2.style.maxWidth = this.#size + "px";
-        this.#node2.style.minWidth = this.#size + "px";
-      } else {
-        this.#node1.style.maxHeight = "";
-        this.#node1.style.maxWidth = this.#size + "px";
-        this.#node1.style.minWidth = this.#size + "px";
-      }
+      node.style.maxWidth = this.#size + "px";
+      node.style.minWidth = this.#size + "px";
+
+      node.style.maxHeight = "";
     }
 
     if (this.#type === "HORIZONTAL") {
-      if (this.#reversed) {
-      
-       
+      node.style.maxHeight = this.#size + "px";
+      node.style.minHeight = this.#size + "px";
 
-        this.#node2.style.maxHeight = this.#size + "px";
-        this.#node2.style.minHeight = this.#size + "px";
-    
-        this.#node2.style.maxWidth = "";
-      } else {
-      
-      
-
-        this.#node1.style.maxHeight = this.#size + "px";
-        this.#node1.style.minHeight = this.#size + "px";
-    
-        this.#node1.style.maxWidth = "";
-      }
+      node.style.maxWidth = "";
     }
   }
 
   setSize(size: number) {
     this.#size = size;
+  }
+}
+
+
+// Content needs to be tabbed
+// for for each children we add a tab, children can be Content
+// max tabs ?
+// panel also allow dialog ? 
+export class PanelTab {
+  #children: PanelContent[] = []
+
+  
+
+  
+}
+
+// here we want the lit-html renderer
+// lets let the panelTab hold the html node ?
+// maybe this could just be a function, so we dont end up with state inside it
+export class PanelContent {
+  
+  constructor(){
+
   }
 }
