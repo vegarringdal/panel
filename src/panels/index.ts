@@ -1,9 +1,7 @@
-
-const VERTICAL = "VERTICAL"
-const HORIZONTAL = "HORIZONTAL"
-export type PANEL_TYPE = typeof HORIZONTAL | typeof VERTICAL
-
-
+import { TemplateResult } from "lit-html";
+const VERTICAL = "VERTICAL";
+const HORIZONTAL = "HORIZONTAL";
+export type PANEL_TYPE = typeof HORIZONTAL | typeof VERTICAL;
 
 class PanelLayout {
   #type: PANEL_TYPE;
@@ -41,7 +39,7 @@ class PanelLayout {
     this.#panel1El = document.createElement("div");
     this.#panel1El.classList.add("panel");
 
-    this.#splitterEl = document.createElement("div");
+    this.#splitterEl = document.createElement("div"); // todo, needs a inner border, but needs to be wide for mouseevent
 
     this.#panel2El = document.createElement("div");
     this.#panel2El.classList.add("panel");
@@ -90,6 +88,7 @@ class PanelLayout {
    */
   appendPanel1(panel: PanelLayout) {
     this.#panel1El.appendChild(panel.root);
+    return panel
   }
 
   /**
@@ -98,6 +97,7 @@ class PanelLayout {
    */
   appendPanel2(panel: PanelLayout) {
     this.#panel2El.appendChild(panel.root);
+    return panel
   }
 
   appendBody() {
@@ -199,33 +199,52 @@ class PanelLayout {
   }
 }
 
-
-export function newVerticalPanel(setSizeRight?: boolean, size?: number, minSize?: number, maxSize?: number){
+/**
+ * 
+ * @param setSizeRight =false
+ * @param size = 250
+ * @param minSize = 100
+ * @param maxSize = 350
+ * @returns 
+ */
+export function newVerticalPanel(
+  setSizeRight= false,
+  size = 250,
+  minSize = 100,
+  maxSize = 350
+) {
   return new PanelLayout(VERTICAL, setSizeRight, size, minSize, maxSize);
 }
 
-export function newHorizontalPanel(setSizeBottom?: boolean, size?: number, minSize?: number, maxSize?: number){
+/**
+ * 
+ * @param setSizeRight = false
+ * @param size = 250
+ * @param minSize = 100
+ * @param maxSize = 350
+ * @returns 
+ */
+export function newHorizontalPanel(
+  setSizeBottom = false,
+  size = 250,
+  minSize = 100,
+  maxSize = 350
+) {
   return new PanelLayout(HORIZONTAL, setSizeBottom, size, minSize, maxSize);
 }
 
 // Content needs to be tabbed
 // for for each children we add a tab, children can be Content
 // max tabs ?
-// panel also allow dialog ? 
+// panel also allow dialog ?
 export class PanelTab {
-  #children: PanelContent[] = []
-
-  
-
-  
+  #children: PanelContent[] = [];
 }
 
 // here we want the lit-html renderer
 // lets let the panelTab hold the html node ?
 // maybe this could just be a function, so we dont end up with state inside it
-export class PanelContent {
-  
-  constructor(){
-
-  }
+export interface PanelContent {
+  label: () => string;
+  render: () => TemplateResult<1>;
 }

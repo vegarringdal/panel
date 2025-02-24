@@ -41,6 +41,7 @@ body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  background-color: gray;
 }
 
 .vertical-panel-splitter {
@@ -49,6 +50,7 @@ body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  background-color: gray;
 }
 
 .blue {
