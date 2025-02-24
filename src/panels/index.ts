@@ -1,5 +1,12 @@
-export class PanelLayout {
-  #type: "VERTICAL" | "HORIZONTAL";
+
+const VERTICAL = "VERTICAL"
+const HORIZONTAL = "HORIZONTAL"
+export type PANEL_TYPE = typeof HORIZONTAL | typeof VERTICAL
+
+
+
+class PanelLayout {
+  #type: PANEL_TYPE;
   root: HTMLDivElement;
   #size: number;
   #panel1El: HTMLDivElement;
@@ -10,7 +17,7 @@ export class PanelLayout {
   #maxSize: number;
 
   constructor(
-    type: "VERTICAL" | "HORIZONTAL",
+    type: PANEL_TYPE,
     reversed = false,
     size = 250,
     minSize = 150,
@@ -67,7 +74,7 @@ export class PanelLayout {
    * this is bottom if horizontal, or right if vertical
    * @param name
    */
-  appPanel2Class(name: string[]) {
+  appPanel2Class(name: string | string[]) {
     if (Array.isArray(name)) {
       this.#panel2El.classList.remove(...name);
       this.#panel2El.classList.add(...name);
@@ -148,12 +155,12 @@ export class PanelLayout {
     this.root.classList.remove(...this.root.classList);
     this.#splitterEl.classList.remove(...this.#splitterEl.classList);
 
-    if (this.#type === "VERTICAL") {
+    if (this.#type === VERTICAL) {
       this.root.classList.add("vertical-panel");
       this.#splitterEl.classList.add("vertical-panel-splitter");
     }
 
-    if (this.#type === "HORIZONTAL") {
+    if (this.#type === HORIZONTAL) {
       this.root.classList.add("horizontal-panel");
       this.#splitterEl.classList.add("horizontal-panel-splitter");
     }
@@ -172,14 +179,14 @@ export class PanelLayout {
 
     const node = this.#reversed ? this.#panel2El : this.#panel1El;
 
-    if (this.#type === "VERTICAL") {
+    if (this.#type === VERTICAL) {
       node.style.maxWidth = this.#size + "px";
       node.style.minWidth = this.#size + "px";
 
       node.style.maxHeight = "";
     }
 
-    if (this.#type === "HORIZONTAL") {
+    if (this.#type === HORIZONTAL) {
       node.style.maxHeight = this.#size + "px";
       node.style.minHeight = this.#size + "px";
 
@@ -192,6 +199,14 @@ export class PanelLayout {
   }
 }
 
+
+export function newVerticalPanel(setSizeRight?: boolean, size?: number, minSize?: number, maxSize?: number){
+  return new PanelLayout(VERTICAL, setSizeRight, size, minSize, maxSize);
+}
+
+export function newHorizontalPanel(setSizeBottom?: boolean, size?: number, minSize?: number, maxSize?: number){
+  return new PanelLayout(HORIZONTAL, setSizeBottom, size, minSize, maxSize);
+}
 
 // Content needs to be tabbed
 // for for each children we add a tab, children can be Content
